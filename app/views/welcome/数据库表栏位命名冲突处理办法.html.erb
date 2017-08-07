@@ -1,0 +1,16 @@
+<h3>在ROR中表栏位保留字段： </h3>
+
+<p>record、type、id、{tablename}_id、created_at、updated_at、created_on、updated_on、
+  {tablename}_count、lock_version
+</p>
+<p>所以在table 栏位命名时要注意避开这些保留字段，如果不小心踩雷了，要试着重命名</p>
+
+<h3>如果我们在从外部导入数据库时已经带有type这个字段，可以采取如下解法：</h3>
+<p>
+  class Example < ActiveRecord::Base <br>
+    self.inheritance_column = "_type" <br>
+  end
+</p>
+<p>原因解释： type 是单表继承用到的字段，rails中的惯性用法，要想在数据库表栏位中使用type字段需要
+给单表继承指定字段（这里指定为“_type”）
+</p>

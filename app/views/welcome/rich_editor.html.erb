@@ -1,0 +1,45 @@
+<h3>如何显示用户输入的HTML</h3>
+
+
+1、 使用simple_form方式：<%= simple_format @event.description %>
+  simple_format 的作用是换行，并且翻译了html语言：在输入框中的换行，输出时会多包一个 <p> 标籤来区分段落。
+  这里也看出了 simple_format 其实不适合用在用户输入 HTML 的情况，因为它会自作聪明多包一层 <p>。
+2、 使用Rails默认输入 <%= @event.description %>
+  这时HTML就完全被脱逸了， 例如< 会编程&lt;,这是Rails默认的安全机制。
+3、 使用raw 和html_safe的方式：<%= raw @event.description %> 或 <%= @event.description.html_safe %>可以让后台输入的HTML完全转义；
+  但是，存在安全问题，会遭受JavaScript攻击，最常见的攻击方式叫做XSS跨站脚本攻击。
+4、sanitize 白名单过滤：Rails 提供了sanitize helper 能让用户输入的HTML显示的同时具备安全性。
+  <%= sanitize @event.description %>
+  这时候可能会少一些变迁或者style属性，因为默认的白名单是：
+  允许的 HTML 标籤 strong em b i p code pre tt samp kbd var sub sup dfn cite big small address hr br div span h1 h2 h3 h4 h5 h6 ul ol li dl dt dd abbr acronym a img blockquote del ins
+  允许的 HTML 属性 href src width height alt cite datetime title class name xml:lang abbr
+  这时候我们需要自己加。要修改config/application.rb
+    class Application < Rails::Application
+      config.i18n.default_locale = "zh-CN"
+      config.time_zone = "Beijing"
+
+      + config.action_view.sanitized_allowed_tags = Rails::Html::WhiteListSanitizer.allowed_tags + %w(table tr td)
+      + config.action_view.sanitized_allowed_attributes = Rails::Html::WhiteListSanitizer.allowed_attributes + %w(style border)
+    end
+  这样就既满足安全性要求，又达到我们想要的结果了。
+
+
+<h1> 富文本编辑器的使用步骤</h1>
+
+1、Gemfile
+  + gem "ckeditor"
+
+2、app/assets/javascripts/application.js
+  + //= require ckeditor/init
+
+3、app/views/products/_form.html.erb
+  +  <%= f.cktext_area :description, ckeditor: { language: 'zh-CN'} %>
+  如果用simple_form 的话
+  +  <%= f.input :description, as: :ckeditor%>
+
+4、config/initializers/assets.rb
+  Rails.application.config.assets.precompile += %w( application.css application.js ckeditor/* )
+
+如果觉得默认工具列（toolbar)太复杂，可以改用mini toolbar配置；
+
+<%= f.cktext_area :description, ckeditor: { toolbar: 'mini', language: 'zh-CN'}%>

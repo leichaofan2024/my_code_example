@@ -1,0 +1,21 @@
+<h1>那要是需要不同於 Active Record 所提供的命名慣例怎麼辦？或者是 Rails 應用程式使用的資料來自老舊的資料庫？沒問題，覆寫預設的慣例非常簡單。</h1>
+<br>
+1、可以使用 ActiveRecord::Base.table_name= 方法來指定對應的資料表名稱: <br>
+
+class Product < ActiveRecord::Base <br>
+  self.table_name = "PRODUCT"  <br>
+end  <br>
+
+2、如果修改了資料表的名稱，在測試裡會需要使用 set_fixture_class 來手動定義 fixture 的類別名稱。 <br>
+
+class FunnyJoke < ActiveSupport::TestCase <br>
+  set_fixture_class funny_jokes: Joke <br>
+  fixtures :funny_jokes <br>
+  ...  <br>
+end <br>
+
+3、覆寫資料表中的欄位也是有可能的，比如使用 ActiveRecord::Base.primary_key= 方法將修改主鍵的名稱 <br>
+
+class Product < ActiveRecord::Base <br>
+  self.primary_key = "product_id" <br>
+end <br>
